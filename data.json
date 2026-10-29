@@ -1,23 +1,23 @@
 
 [
-  {
-    "id": 1,
-    "name": "Python",
-    "category": "Programming"
-  },
-  {
-    "id": 2,
-    "name": "Flask",
-    "category": "Web Framework"
-  },
-  {
-    "id": 3,
-    "name": "MongoDB",
-    "category": "Database"
-  },
-  {
-    "id": 4,
-    "name": "Git",
-    "category": "Version Control"
-  }
+    {
+        "id": 1,
+        "name": "Laptop",
+        "price": 50000
+    },
+    {
+        "id": 2,
+        "name": "Mobile",
+        "price": 20000
+    },
+    {
+        "id": 3,
+        "name": "Keyboard",
+        "price": 1500
+    },
+      {
+        "id": 4,
+        "name": "Headphone",
+        "price": 1200
+    }
 ]
