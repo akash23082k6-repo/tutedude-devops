@@ -1,23 +1,18 @@
-
 [
-    {
-        "id": 1,
-        "name": "Laptop",
-        "price": 50000
-    },
-    {
-        "id": 2,
-        "name": "Mobile",
-        "price": 20000
-    },
-    {
-        "id": 3,
-        "name": "Keyboard",
-        "price": 1500
-    },
-      {
-        "id": 4,
-        "name": "Headphone",
-        "price": 1200
-    }
+  {
+    "id": 1,
+    "name": "Akash",
+    "role": "DevOps Engineer"
+  },
+  {
+    "id": 2,
+    "name": "Python",
+    "role": "Backend Development"
+  },
+  {
+    "id": 3,
+    "name": "Kubernetes",
+    "role": "Container Orchestration"
+  }
 ]
+
