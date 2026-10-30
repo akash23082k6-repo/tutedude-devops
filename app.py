@@ -1,76 +1,115 @@
 
 import os
+import json
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, jsonify, request
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
-load_dotenv()
-
+# Initialize Flask
 app = Flask(__name__)
 
-# Connect to MongoDB Atlas
-mongo_uri = os.getenv("MONGO_URI")
-client = None
-collection = None
+# Load environment variables
+load_dotenv()
 
-if mongo_uri:
-    client = MongoClient(
-        mongo_uri,
-        serverSelectionTimeoutMS=5000
-    )
+# MongoDB connection
+MONGO_URI = os.getenv("MONGO_URI")
 
-    db = client["flask_assignment"]
-    collection = db["form_submissions"]
+if not MONGO_URI:
+    raise RuntimeError("MONGO_URI is missing from .env file")
+
+client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=5000
+)
+
+db = client["flask_todo_db"]
+
+# MongoDB collection
+todo_collection = db["todo_items"]
 
 
-@app.route("/", methods=["GET", "POST"])
+# ----------------------------------
+# Task 1: JSON API Route
+# ----------------------------------
+
+@app.route("/api", methods=["GET"])
+def get_data():
+
+    try:
+        file_path = os.path.join(app.root_path, "data.json")
+
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        return jsonify(data)
+
+    except FileNotFoundError:
+        return jsonify({"error": "data.json file not found"}), 404
+
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON format"}), 500
+
+
+# ----------------------------------
+# Task 3: Submit To-Do Item API
+# ----------------------------------
+
+@app.route("/submittodoitem", methods=["POST"])
+def submit_todo_item():
+
+    try:
+        # Accept form data or JSON data
+        data = request.get_json(silent=True) or request.form
+
+        # Extract submitted fields
+        item_name = data.get("itemName", "").strip()
+        item_description = data.get("itemDescription", "").strip()
+
+        # Validate input
+        if not item_name or not item_description:
+            return jsonify({
+                "error": "Item Name and Item Description are required"
+            }), 400
+
+        # Prepare MongoDB document
+        todo_data = {
+            "itemName": item_name,
+            "itemDescription": item_description
+        }
+
+        # Store data in MongoDB
+        result = todo_collection.insert_one(todo_data)
+
+        return jsonify({
+            "message": "To-Do item submitted successfully",
+            "inserted_id": str(result.inserted_id)
+        }), 201
+
+    except PyMongoError:
+        return jsonify({
+            "error": "Unable to save data in MongoDB"
+        }), 500
+
+
+# ----------------------------------
+# Home Route
+# ----------------------------------
+
+@app.route("/", methods=["GET"])
 def home():
-    error = None
 
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip()
-        message = request.form.get("message", "").strip()
-
-        # Validate form fields
-        if not name or not email or not message:
-            error = "Please fill in all fields."
-
-        elif collection is None:
-            error = "Database configuration is missing."
-
-        else:
-            try:
-                # Insert data into MongoDB Atlas
-                collection.insert_one({
-                    "name": name,
-                    "email": email,
-                    "message": message
-                })
-
-                # Redirect only after successful insertion
-                return redirect(url_for("success"))
-
-            except PyMongoError:
-                # Log technical details in the terminal
-                app.logger.exception("MongoDB insertion failed")
-
-                # Show a friendly error on the same page
-                error = (
-                    "Unable to save data. "
-                    "Please check your database connection and try again."
-                )
-
-    # Display errors without redirecting
-    return render_template("form.html", error=error)
+    return """
+        <h1>Flask To-Do Application</h1>
+        <p>Backend API is running.</p>
+        <a href="/api">View JSON API</a>
+    """
 
 
-@app.route("/success")
-def success():
-    return render_template("success.html")
-
+# ----------------------------------
+# Run Flask Application
+# ----------------------------------
 
 if __name__ == "__main__":
     app.run(debug=True)
