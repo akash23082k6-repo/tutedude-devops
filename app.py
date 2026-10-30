@@ -1,76 +1,57 @@
 
+from flask import Flask, jsonify, render_template
+import json
 import os
-
-from flask import Flask, render_template, request, redirect, url_for
-from dotenv import load_dotenv
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-load_dotenv()
 
 app = Flask(__name__)
 
-# Connect to MongoDB Atlas
-mongo_uri = os.getenv("MONGO_URI")
-client = None
-collection = None
+# --------------------------------
+# Task 1: JSON API Route
+# --------------------------------
 
-if mongo_uri:
-    client = MongoClient(
-        mongo_uri,
-        serverSelectionTimeoutMS=5000
-    )
+@app.route("/api", methods=["GET"])
+def get_data():
+    try:
+        file_path = os.path.join(app.root_path, "data.json")
 
-    db = client["flask_assignment"]
-    collection = db["form_submissions"]
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        return jsonify(data)
+
+    except FileNotFoundError:
+        return jsonify({"error": "data.json file not found"}), 404
+
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON format"}), 500
 
 
-@app.route("/", methods=["GET", "POST"])
+# --------------------------------
+# Task 3: To-Do Frontend Route
+# --------------------------------
+
+@app.route("/todo", methods=["GET"])
+def todo():
+    return render_template("todo.html")
+
+
+# --------------------------------
+# Home Route
+# --------------------------------
+
+@app.route("/", methods=["GET"])
 def home():
-    error = None
-
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip()
-        message = request.form.get("message", "").strip()
-
-        # Validate form fields
-        if not name or not email or not message:
-            error = "Please fill in all fields."
-
-        elif collection is None:
-            error = "Database configuration is missing."
-
-        else:
-            try:
-                # Insert data into MongoDB Atlas
-                collection.insert_one({
-                    "name": name,
-                    "email": email,
-                    "message": message
-                })
-
-                # Redirect only after successful insertion
-                return redirect(url_for("success"))
-
-            except PyMongoError:
-                # Log technical details in the terminal
-                app.logger.exception("MongoDB insertion failed")
-
-                # Show a friendly error on the same page
-                error = (
-                    "Unable to save data. "
-                    "Please check your database connection and try again."
-                )
-
-    # Display errors without redirecting
-    return render_template("form.html", error=error)
+    return """
+        <h1>Flask Application</h1>
+        <p>Welcome to the Flask and MongoDB project.</p>
+        <a href="/api">View API Data</a><br>
+        <a href="/todo">Open To-Do Page</a>
+    """
 
 
-@app.route("/success")
-def success():
-    return render_template("success.html")
-
+# --------------------------------
+# Run Flask Application
+# --------------------------------
 
 if __name__ == "__main__":
     app.run(debug=True)
