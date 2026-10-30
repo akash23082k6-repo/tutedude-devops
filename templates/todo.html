@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do Application</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>My To-Do List</h1>
+
+        <form action="/submittodoitem" method="POST">
+
+            <label for="itemName">Item Name</label>
+            <input
+                type="text"
+                id="itemName"
+                name="itemName"
+                placeholder="Enter item name"
+                required
+            >
+
+            <label for="itemDescription">Item Description</label>
+            <textarea
+                id="itemDescription"
+                name="itemDescription"
+                rows="5"
+                placeholder="Enter item description"
+                required
+            ></textarea>
+
+            <button type="submit">Add To-Do Item</button>
+
+        </form>
+
+    </div>
+
+</body>
+</html>
+
